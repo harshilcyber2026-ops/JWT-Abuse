@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JWT Abuse — FlagVault CTF</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>" />
+</head>
+<body>
+
+  <!-- ═══════ NAV ═══════ -->
+  <nav class="nav">
+    <a href="#" class="nav-brand">
+      <span class="bracket">[</span><span class="brand-flag">FLAG</span>VAULT<span class="bracket">]</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">Challenges</a></li>
+      <li><a href="#" class="active">JWT</a></li>
+      <li><a href="#">Scoreboard</a></li>
+    </ul>
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      CHALLENGE LIVE
+    </div>
+  </nav>
+
+  <!-- ═══════ PAGES ═══════ -->
+
+  <!-- PAGE: Login -->
+  <div id="page-login" class="page active">
+    <div class="page-wrap">
+
+      <header class="page-header" data-index="04">
+        <div class="page-eyebrow">WEB EXPLOITATION · CHALLENGE #04</div>
+        <h1 class="page-title"><span class="hl2">JWT</span> — <span class="hl">Algorithm Confusion</span></h1>
+        <p class="page-desc">
+          The application uses JSON Web Tokens for authentication but has a critical misconfiguration.<br/>
+          Can you forge an admin token and access the restricted dashboard?
+        </p>
+      </header>
+
+      <div class="stats-strip">
+        <div class="stat-box"><span class="stat-val">350</span><span class="stat-label">Points</span></div>
+        <div class="stat-box"><span class="stat-val red">Hard</span><span class="stat-label">Difficulty</span></div>
+        <div class="stat-box"><span class="stat-val amber">11</span><span class="stat-label">Solves</span></div>
+        <div class="stat-box"><span class="stat-val">Web</span><span class="stat-label">Category</span></div>
+      </div>
+
+      <!-- Two-col layout -->
+      <div class="jwt-layout">
+
+        <!-- LEFT: API Terminal -->
+        <div class="jwt-left">
+          <div class="sec-divider"><h3>Target Application</h3></div>
+
+          <!-- Browser chrome -->
+          <div class="terminal-bar">
+            <span class="t-dot t-red"></span><span class="t-dot t-yellow"></span><span class="t-dot t-green"></span>
+            <span class="t-url" id="url-bar">http://challenge.flagvault.local:8083/api/login</span>
+          </div>
+
+          <!-- Login App -->
+          <div class="app-window" id="app-login-window">
+            <div class="app-brand">
+              <span class="app-logo">🔐</span>
+              <div>
+                <div class="app-title">SecureAuth API</div>
+                <div class="app-subtitle">JWT Authentication Service v2.0 — /api/login</div>
+              </div>
+            </div>
+
+            <!-- Request builder -->
+            <div class="req-section">
+              <div class="req-method-row">
+                <span class="method-badge">POST</span>
+                <span class="req-path">/api/login</span>
+              </div>
+              <div class="req-body-label">// REQUEST BODY (JSON)</div>
+              <div class="req-body-editor">
+                <div class="editor-line"><span class="j-key">"username"</span><span class="j-colon">:</span> <input class="j-val-input" id="login-user" type="text" value="guest" /></div>
+                <div class="editor-line"><span class="j-key">"password"</span><span class="j-colon">:</span> <input class="j-val-input" id="login-pass" type="text" value="guest123" /></div>
+              </div>
+              <button class="btn btn-primary send-btn" onclick="doLogin()" id="btn-login">
+                &gt;_ SEND REQUEST
+              </button>
+            </div>
+
+            <!-- Response viewer -->
+            <div class="res-section hidden" id="login-response">
+              <div class="res-header">
+                <span class="res-status" id="res-status-code">200 OK</span>
+                <span class="res-label">// RESPONSE</span>
+              </div>
+              <div class="res-body" id="res-body-login"></div>
+            </div>
+          </div>
+
+          <!-- JWT Decoder / Forger -->
+          <div class="sec-divider"><h3>JWT Decoder & Forger</h3></div>
+          <div class="jwt-tool-panel">
+
+            <div class="tool-tabs">
+              <button class="tool-tab active" onclick="switchTab('decode')" id="tab-decode">Decode</button>
+              <button class="tool-tab" onclick="switchTab('forge')" id="tab-forge">Forge Token</button>
+              <button class="tool-tab" onclick="switchTab('send')" id="tab-send">Send Request</button>
+            </div>
+
+            <!-- TAB: Decode -->
+            <div class="tool-tab-content active" id="tab-content-decode">
+              <label class="form-label">Paste JWT Token</label>
+              <textarea class="jwt-textarea" id="decode-input" rows="4" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imd1ZXN0IiwicGFzc3dvcmQiOiJndWVzdDEyMyJ9..." oninput="decodeJWT()"></textarea>
+              <button class="btn btn-primary" onclick="decodeJWT()" style="width:100%;margin-bottom:0.8rem;font-size:0.7rem;">DECODE</button>
+
+              <div class="jwt-parts" id="jwt-parts-display">
+                <div class="jwt-part">
+                  <div class="part-label part-header">HEADER</div>
+                  <pre class="part-body" id="decoded-header">{ }</pre>
+                </div>
+                <div class="jwt-part">
+                  <div class="part-label part-payload">PAYLOAD</div>
+                  <pre class="part-body" id="decoded-payload">{ }</pre>
+                </div>
+                <div class="jwt-part">
+                  <div class="part-label part-sig">SIGNATURE</div>
+                  <pre class="part-body part-sig-body" id="decoded-sig">—</pre>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB: Forge -->
+            <div class="tool-tab-content" id="tab-content-forge">
+              <p class="tool-hint">💡 Change <code>alg</code> to <code>"none"</code> and set <code>role</code> to <code>"admin"</code>. Tokens with <code>alg:none</code> bypass signature verification.</p>
+
+              <label class="form-label" style="margin-top:0.8rem;">Header (JSON)</label>
+              <textarea class="jwt-textarea" id="forge-header" rows="3">{"alg":"HS256","typ":"JWT"}</textarea>
+
+              <label class="form-label" style="margin-top:0.6rem;">Payload (JSON)</label>
+              <textarea class="jwt-textarea" id="forge-payload" rows="5">{"username":"guest","role":"guest","iat":1700000000}</textarea>
+
+              <label class="form-label" style="margin-top:0.6rem;">Signature (leave empty for <code>alg:none</code>)</label>
+              <input class="form-control" id="forge-sig" type="text" placeholder="Leave empty for none algorithm attack" />
+
+              <button class="btn btn-primary" onclick="forgeJWT()" style="width:100%;margin-top:0.8rem;font-size:0.7rem;">⚡ FORGE TOKEN</button>
+
+              <div class="forged-output hidden" id="forged-output">
+                <div class="form-label" style="margin-top:0.8rem;">FORGED TOKEN</div>
+                <div class="forged-token" id="forged-token-value"></div>
+                <button class="btn-copy-small" onclick="copyForged()">📋 Copy & Use in Send tab</button>
+                <div class="copy-toast hidden" id="forge-copy-toast">✓ Copied + pasted to Send tab!</div>
+              </div>
+            </div>
+
+            <!-- TAB: Send -->
+            <div class="tool-tab-content" id="tab-content-send">
+              <div class="req-method-row" style="margin-bottom:0.8rem;">
+                <span class="method-badge">GET</span>
+                <span class="req-path">/api/admin/dashboard</span>
+              </div>
+              <label class="form-label">Authorization Header</label>
+              <div class="auth-header-preview">
+                <span class="auth-prefix">Bearer </span><input class="j-val-input auth-token-input" id="send-token" type="text" placeholder="Paste or auto-fill your forged JWT here..." />
+              </div>
+              <button class="btn btn-danger" onclick="sendForgedToken()" style="width:100%;margin-top:0.8rem;font-size:0.7rem;" id="btn-send-token">
+                &gt;_ SEND FORGED REQUEST
+              </button>
+
+              <div class="res-section hidden" id="admin-response">
+                <div class="res-header">
+                  <span class="res-status" id="admin-res-code">401</span>
+                  <span class="res-label">// RESPONSE</span>
+                </div>
+                <div class="res-body" id="admin-res-body"></div>
+              </div>
+            </div>
+
+          </div><!-- /jwt-tool-panel -->
+        </div><!-- /jwt-left -->
+
+        <!-- RIGHT: Info, Hints, Submit -->
+        <div class="jwt-right">
+
+          <div class="sec-divider"><h3>Challenge Info</h3></div>
+          <div class="info-panel">
+            <div class="info-row"><span class="info-key">Endpoint</span><code>/api/login</code></div>
+            <div class="info-row"><span class="info-key">Method</span><span class="tag tag-amber">POST</span></div>
+            <div class="info-row"><span class="info-key">Credentials</span><code>guest / guest123</code></div>
+            <div class="info-row"><span class="info-key">Vulnerability</span><span class="tag tag-red">JWT alg:none</span></div>
+            <div class="info-row"><span class="info-key">Points</span><span style="color:var(--accent);font-family:var(--font-hud)">350</span></div>
+          </div>
+
+          <div class="sec-divider"><h3>Description</h3></div>
+          <div class="desc-block">
+            <p>The server issues JWT tokens signed with <code>HS256</code>. However, it accepts the <code>alg</code> field from the token itself — meaning if you set <code>alg: "none"</code>, the server skips signature verification entirely.</p>
+            <br/>
+            <p>Login as <code>guest</code>, decode the token, change <strong>both</strong> the algorithm to <code>"none"</code> and the role to <code>"admin"</code>, strip the signature, and send it to <code>/api/admin/dashboard</code>.</p>
+          </div>
+
+          <div class="sec-divider"><h3>How JWT Works</h3></div>
+          <div class="jwt-anatomy">
+            <div class="anatomy-row">
+              <span class="anatomy-part ap-red">header</span>
+              <span class="anatomy-dot">.</span>
+              <span class="anatomy-part ap-purple">payload</span>
+              <span class="anatomy-dot">.</span>
+              <span class="anatomy-part ap-cyan">signature</span>
+            </div>
+            <div class="anatomy-explain">
+              <div class="ae-row"><span class="ap-red ae-label">header</span> — algorithm &amp; token type (base64url)</div>
+              <div class="ae-row"><span class="ap-purple ae-label">payload</span> — claims: username, role, iat (base64url)</div>
+              <div class="ae-row"><span class="ap-cyan ae-label">signature</span> — HMAC(header+payload, secret) — <em>skipped if alg=none</em></div>
+            </div>
+            <div class="vuln-box">
+              <span class="vuln-label">⚠ VULNERABILITY</span>
+              If <code>alg</code> is set to <code>"none"</code> and the server trusts it, signature verification is skipped. A forged token with <code>"role":"admin"</code> will grant admin access.
+            </div>
+          </div>
+
+          <div class="sec-divider"><h3>Hints</h3></div>
+          <div class="hints-list">
+
+            <div class="hint-card">
+              <div class="hint-header" onclick="toggleHint(1)">
+                <span>💡 HINT 1</span>
+                <span class="hint-cost tag tag-green">−25 pts</span>
+                <span class="hint-toggle" id="hint1-toggle">▼ Reveal</span>
+              </div>
+              <div class="hint-body hidden" id="hint1-body">
+                Login with <code>guest / guest123</code>. Decode the returned JWT — the payload contains a <code>role</code> field set to <code>"guest"</code>.
+              </div>
+            </div>
+
+            <div class="hint-card">
+              <div class="hint-header" onclick="toggleHint(2)">
+                <span>💡 HINT 2</span>
+                <span class="hint-cost tag tag-red">−50 pts</span>
+                <span class="hint-toggle" id="hint2-toggle">▼ Reveal</span>
+              </div>
+              <div class="hint-body hidden" id="hint2-body">
+                In the Forge tab: set <code>alg</code> to <code>"none"</code>, change <code>role</code> to <code>"admin"</code>, and leave the signature field empty. The forged token ends with a trailing dot and no signature.
+              </div>
+            </div>
+
+            <div class="hint-card">
+              <div class="hint-header" onclick="toggleHint(3)">
+                <span>💡 HINT 3</span>
+                <span class="hint-cost tag tag-purple">−75 pts</span>
+                <span class="hint-toggle" id="hint3-toggle">▼ Reveal</span>
+              </div>
+              <div class="hint-body hidden" id="hint3-body">
+                A valid <code>alg:none</code> forged token looks like:<br/><br/>
+                <code>eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VybmFtZSI6Imd1ZXN0Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAwMDAwMDAwfQ.</code><br/><br/>
+                Note the trailing dot — the signature part is empty but the dot must be there.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="sec-divider"><h3>Attack Steps</h3></div>
+          <div class="attack-flow">
+            <div class="flow-step"><div class="flow-num">01</div><div class="flow-text"><strong>Login as guest</strong><br/><span>POST /api/login → receive signed JWT</span></div></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><div class="flow-num">02</div><div class="flow-text"><strong>Decode the token</strong><br/><span>Use the Decode tab — observe <code>role: "guest"</code></span></div></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><div class="flow-num">03</div><div class="flow-text"><strong>Forge admin token</strong><br/><span>Set <code>alg: "none"</code>, <code>role: "admin"</code>, empty signature</span></div></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step"><div class="flow-num">04</div><div class="flow-text"><strong>Send to /api/admin/dashboard</strong><br/><span>Paste forged token in Send tab → server accepts it</span></div></div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step flow-step-flag"><div class="flow-num">🚩</div><div class="flow-text"><strong>Flag revealed</strong><br/><span>Admin dashboard returns the secret flag</span></div></div>
+          </div>
+
+          <div class="sec-divider"><h3>Submit Flag</h3></div>
+          <div class="flag-submit-panel">
+            <div class="form-group flag-input-wrap">
+              <span class="flag-prefix">FlagVault{</span>
+              <input class="form-control" id="flag-input" type="text" placeholder="your_flag_here" autocomplete="off" />
+            </div>
+            <button class="btn btn-primary" onclick="submitFlag()" style="width:100%">&gt;_ SUBMIT FLAG</button>
+            <div class="submit-result" id="flag-result"></div>
+          </div>
+
+        </div><!-- /jwt-right -->
+      </div><!-- /jwt-layout -->
+    </div><!-- /page-wrap -->
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-brand">FLAG<span>VAULT</span> CTF</div>
+      <div class="footer-copy">Challenge #04 · Web Exploitation · JWT Algorithm Confusion</div>
+    </footer>
+  </div><!-- /page-login -->
+
+  <!-- PAGE: Admin Dashboard (revealed after successful forge) -->
+  <div id="page-admin" class="page hidden">
+    <div class="page-wrap" style="max-width:900px;">
+
+      <div class="admin-dash-header">
+        <div class="admin-dash-badge">⚠ ADMIN SESSION — JWT FORGED</div>
+        <button class="btn btn-danger" onclick="goBack()" style="font-size:0.65rem;padding:0.4rem 1rem;">← Back</button>
+      </div>
+
+      <h1 class="page-title" style="margin-bottom:0.5rem;">Admin <span class="hl">Dashboard</span></h1>
+      <p class="page-desc" style="margin-bottom:2rem;">JWT signature verification bypassed via <code>alg:none</code> attack. Welcome, admin.</p>
+
+      <div class="stats-strip" style="margin-bottom:2rem;">
+        <div class="stat-box"><span class="stat-val">1,337</span><span class="stat-label">Total Users</span></div>
+        <div class="stat-box"><span class="stat-val red">42</span><span class="stat-label">Active Threats</span></div>
+        <div class="stat-box"><span class="stat-val amber">7</span><span class="stat-label">Pending Alerts</span></div>
+        <div class="stat-box"><span class="stat-val">ROOT</span><span class="stat-label">Access Level</span></div>
+      </div>
+
+      <!-- Flag box -->
+      <div class="flag-reveal-full">
+        <div class="flag-glow-ring"></div>
+        <div class="flag-reveal-icon">🏆</div>
+        <h2 class="flag-reveal-title">Flag Retrieved</h2>
+        <p class="flag-reveal-sub">Admin secret unlocked via JWT algorithm confusion attack.</p>
+        <div class="flag-box-full">
+          <span class="flag-box-label">SECRET FLAG</span>
+          <code class="flag-box-value" id="flag-display">FlagVault{jwt_n0n3_4lg0r1thm_1s_4_cl4ss1c_m1st4k3}</code>
+          <button class="btn-copy-small" onclick="copyFlag()">📋 Copy</button>
+          <div class="copy-toast hidden" id="flag-copy-toast">✓ Copied!</div>
+        </div>
+
+        <div class="decoded-token-section">
+          <div class="form-label" style="margin-bottom:0.5rem;">// YOUR FORGED TOKEN (accepted by server)</div>
+          <div class="forged-token" id="admin-token-display" style="word-break:break-all;"></div>
+        </div>
+
+        <div class="admin-log-panel">
+          <div class="log-header-row">// SERVER AUTH LOG</div>
+          <div class="log-entry log-err"> [CRIT]  alg=none token accepted — signature verification skipped</div>
+          <div class="log-entry log-warn">[WARN]  Role escalation: guest → admin via token tampering</div>
+          <div class="log-entry log-info">[INFO]  GET /api/admin/dashboard — 200 OK</div>
+          <div class="log-entry log-info">[INFO]  Flag delivered to authenticated admin session</div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="footer">
+      <div class="footer-brand">FLAG<span>VAULT</span> CTF</div>
+      <div class="footer-copy">Challenge #04 · JWT Algorithm Confusion — Pwned ✓</div>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
