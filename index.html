@@ -14,11 +14,6 @@
     <a href="#" class="nav-brand">
       <span class="bracket">[</span><span class="brand-flag">FLAG</span>VAULT<span class="bracket">]</span>
     </a>
-    <ul class="nav-links">
-      <li><a href="#">Challenges</a></li>
-      <li><a href="#" class="active">JWT</a></li>
-      <li><a href="#">Scoreboard</a></li>
-    </ul>
     <div class="nav-status">
       <div class="status-dot"></div>
       CHALLENGE LIVE
@@ -39,13 +34,6 @@
           Can you forge an admin token and access the restricted dashboard?
         </p>
       </header>
-
-      <div class="stats-strip">
-        <div class="stat-box"><span class="stat-val">350</span><span class="stat-label">Points</span></div>
-        <div class="stat-box"><span class="stat-val red">Hard</span><span class="stat-label">Difficulty</span></div>
-        <div class="stat-box"><span class="stat-val amber">11</span><span class="stat-label">Solves</span></div>
-        <div class="stat-box"><span class="stat-val">Web</span><span class="stat-label">Category</span></div>
-      </div>
 
       <!-- Two-col layout -->
       <div class="jwt-layout">
@@ -186,7 +174,6 @@
             <div class="info-row"><span class="info-key">Method</span><span class="tag tag-amber">POST</span></div>
             <div class="info-row"><span class="info-key">Credentials</span><code>guest / guest123</code></div>
             <div class="info-row"><span class="info-key">Vulnerability</span><span class="tag tag-red">JWT alg:none</span></div>
-            <div class="info-row"><span class="info-key">Points</span><span style="color:var(--accent);font-family:var(--font-hud)">350</span></div>
           </div>
 
           <div class="sec-divider"><h3>Description</h3></div>
@@ -216,47 +203,7 @@
             </div>
           </div>
 
-          <div class="sec-divider"><h3>Hints</h3></div>
-          <div class="hints-list">
-
-            <div class="hint-card">
-              <div class="hint-header" onclick="toggleHint(1)">
-                <span>💡 HINT 1</span>
-                <span class="hint-cost tag tag-green">−25 pts</span>
-                <span class="hint-toggle" id="hint1-toggle">▼ Reveal</span>
-              </div>
-              <div class="hint-body hidden" id="hint1-body">
-                Login with <code>guest / guest123</code>. Decode the returned JWT — the payload contains a <code>role</code> field set to <code>"guest"</code>.
-              </div>
-            </div>
-
-            <div class="hint-card">
-              <div class="hint-header" onclick="toggleHint(2)">
-                <span>💡 HINT 2</span>
-                <span class="hint-cost tag tag-red">−50 pts</span>
-                <span class="hint-toggle" id="hint2-toggle">▼ Reveal</span>
-              </div>
-              <div class="hint-body hidden" id="hint2-body">
-                In the Forge tab: set <code>alg</code> to <code>"none"</code>, change <code>role</code> to <code>"admin"</code>, and leave the signature field empty. The forged token ends with a trailing dot and no signature.
-              </div>
-            </div>
-
-            <div class="hint-card">
-              <div class="hint-header" onclick="toggleHint(3)">
-                <span>💡 HINT 3</span>
-                <span class="hint-cost tag tag-purple">−75 pts</span>
-                <span class="hint-toggle" id="hint3-toggle">▼ Reveal</span>
-              </div>
-              <div class="hint-body hidden" id="hint3-body">
-                A valid <code>alg:none</code> forged token looks like:<br/><br/>
-                <code>eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VybmFtZSI6Imd1ZXN0Iiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAwMDAwMDAwfQ.</code><br/><br/>
-                Note the trailing dot — the signature part is empty but the dot must be there.
-              </div>
-            </div>
-
-          </div>
-
-          <div class="sec-divider"><h3>Attack Steps</h3></div>
+         <div class="sec-divider"><h3>Attack Steps</h3></div>
           <div class="attack-flow">
             <div class="flow-step"><div class="flow-num">01</div><div class="flow-text"><strong>Login as guest</strong><br/><span>POST /api/login → receive signed JWT</span></div></div>
             <div class="flow-arrow">↓</div>
@@ -267,16 +214,6 @@
             <div class="flow-step"><div class="flow-num">04</div><div class="flow-text"><strong>Send to /api/admin/dashboard</strong><br/><span>Paste forged token in Send tab → server accepts it</span></div></div>
             <div class="flow-arrow">↓</div>
             <div class="flow-step flow-step-flag"><div class="flow-num">🚩</div><div class="flow-text"><strong>Flag revealed</strong><br/><span>Admin dashboard returns the secret flag</span></div></div>
-          </div>
-
-          <div class="sec-divider"><h3>Submit Flag</h3></div>
-          <div class="flag-submit-panel">
-            <div class="form-group flag-input-wrap">
-              <span class="flag-prefix">FlagVault{</span>
-              <input class="form-control" id="flag-input" type="text" placeholder="your_flag_here" autocomplete="off" />
-            </div>
-            <button class="btn btn-primary" onclick="submitFlag()" style="width:100%">&gt;_ SUBMIT FLAG</button>
-            <div class="submit-result" id="flag-result"></div>
           </div>
 
         </div><!-- /jwt-right -->
